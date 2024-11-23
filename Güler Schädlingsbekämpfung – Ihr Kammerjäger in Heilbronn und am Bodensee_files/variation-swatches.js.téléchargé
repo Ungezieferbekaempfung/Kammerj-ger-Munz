@@ -1,0 +1,83 @@
+;(function ($) {
+    "use strict";
+    var $document = $(document);
+    function variations_custom() {
+        $('.variations_form ').find('.data-val').html('');
+        $('.variations_form select').each(function () {
+            var _this = $(this);
+            _this.find('option').each(function () {
+                var _ID        = $(this).parent().data('id'),
+                    _data      = $(this).data(_ID),
+                    _value     = $(this).attr('value'),
+                    _name      = $(this).html(),
+                    _data_type = $(this).data('type')? $(this).data('type') :'text',
+                    _itemclass = _data_type,
+                    tooltip    = $(this).data('tooltip'),
+                    width      = $(this).data('width'),
+                    height     = $(this).data('height');
+
+                if ( $(this).is(':selected') ) {
+                    _itemclass += ' active';
+                }
+                if ( _value !== '' ) {
+                    if ( _data_type == 'color' || _data_type == 'photo' ) {
+                        _this.parent().find('.data-val').append('<a class="change-value hint--top hint--bounce ' + _itemclass + '" href="#" style="background: ' + _data + '; background-size: cover; display: inline-block; background-repeat: no-repeat; width:'+width+'px;height:'+height+'px; " aria-label="'+tooltip+'"  data-value="' + _value + '"><span></span></a>');
+                    } else {
+                        _this.parent().find('.data-val').append('<a class="change-value ' + _itemclass + '" href="#" data-value="' + _value + '"><span>' + _name + '</span></a>');
+                    }
+                }
+            });
+        });
+    }
+
+    $document
+    .ready(function() {
+        if($('.butic-custom-product-categories').length){
+            $('.butic-custom-product-categories').each(function(index, el) {
+                var _this = $(el),
+                    _hiden_items = _this.find('.hidden-item');
+                if(!_hiden_items.length){
+                    _this.find('.cat-item.btn-control').remove();
+                }
+            });
+        }
+    })
+    .on('click', '.butic-custom-product-categories .btn-toggle-click', function (e) {
+        e.preventDefault();
+        var _this    = $(this),
+            _lbl     = _this.attr('data-lbl'),
+            _simbol  = _this.attr('data-simbol'),
+            _sibling = _this.siblings('span');
+        _this.parents().siblings('.hidden-item').slideToggle('fast');
+        _this.attr({
+            'data-lbl': _this.text(),
+            'data-simbol': _sibling.attr('class')
+        });
+        _this.text(_lbl);
+        _sibling.attr('class', _simbol);
+    })
+    .on('click', '.reset_variations', function () {
+        $('.variations_form').find('.change-value').removeClass('active');
+    })
+    .on('click', '.variations_form .change-value', function (e) {
+        e.preventDefault();
+        var _this   = $(this),
+            _change = _this.data('value');
+        if(_this.hasClass('active')){
+            _this.parent().parent().children('select').val('').trigger('change');
+            return false;
+        }
+        _this.parent().parent().children('select').val(_change).trigger('change');
+        _this.addClass('active').siblings().removeClass('active');
+    })
+    .on('woocommerce_variation_has_changed wc_variation_form', function () {
+        variations_custom();
+    })
+    .on('qv_loader_stop', function () {
+        variations_custom();
+    })
+    .ajaxComplete(function (event, xhr, settings) {
+        variations_custom();
+    });
+
+})(jQuery);
